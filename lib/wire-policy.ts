@@ -1,0 +1,4 @@
+export function minorAmount(amount:number){if(!Number.isSafeInteger(amount)||amount<1000||amount>1000000)throw new Error('Invalid amount');return amount*100;}
+export function checkoutUrl(value:unknown){if(typeof value!=='string')throw new Error('Invalid checkout');const url=new URL(value);if(url.origin!=='https://pay.wire.mn'||!url.pathname.startsWith('/c/')||url.username||url.password)throw new Error('Invalid checkout');return url.href;}
+export type WireIntent={id:string;amount:number;currency:string;status:string;livemode:boolean;metadata?:Record<string,string>};
+export function matchesPayment(intent:WireIntent,order:{id:string;wire_intent:string;amount:number},live:boolean){return intent.id===order.wire_intent&&intent.amount===minorAmount(order.amount)&&intent.currency==='MNT'&&intent.livemode===live&&intent.metadata?.order_id===order.id;}

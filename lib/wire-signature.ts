@@ -1,0 +1,2 @@
+import {createHmac,timingSafeEqual} from 'node:crypto';
+export function verifyWireSignature(raw:Buffer,header:string|null,secret:string,now=Date.now()){if(!header||!secret)return false;const t=header.match(/(?:^|,)t=(\d+)(?:,|$)/)?.[1];const signatures=[...header.matchAll(/(?:^|,)v1=([a-f0-9]{64})(?=,|$)/g)].map(m=>m[1]);if(!t||Math.abs(now/1000-Number(t))>300)return false;const expected=createHmac('sha256',secret).update(t+'.').update(raw).digest();return signatures.some(sig=>timingSafeEqual(expected,Buffer.from(sig,'hex')));}
