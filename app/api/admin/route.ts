@@ -1,0 +1,6 @@
+import {cookies} from 'next/headers';
+import {authenticate,authConfigured,authCookie,createSession,revokeSession} from '@/lib/auth';
+import {consumeLimit} from '@/lib/security-store';
+import {body,sameOrigin,errorResponse} from '@/lib/http';
+export async function POST(request:Request){if(!sameOrigin(request))return Response.json({error:'Forbidden'},{status:403});try{if(!await consumeLimit('admin-login',8,60000))return Response.json({error:'Too many attempts'},{status:429,headers:{'Retry-After':'60'}});if(!authConfigured()&&!['localhost','127.0.0.1','[::1]'].includes(new URL(request.url).hostname))return Response.json({error:'Configure admin credentials first'},{status:403});const data=await body(request);if(!await authenticate(String(data.username||''),String(data.password||''),String(data.code||'')))return Response.json({error:'Unauthorized'},{status:401});const token=await createSession();(await cookies()).set(authCookie,token,{httpOnly:true,sameSite:'strict',secure:process.env.NODE_ENV==='production',path:'/',maxAge:8*60*60});return Response.json({ok:true});}catch(e){return errorResponse(e,'Unable to sign in');}}
+export async function DELETE(request:Request){if(!sameOrigin(request))return Response.json({error:'Forbidden'},{status:403});try{await revokeSession();return Response.json({ok:true});}catch(e){return errorResponse(e);}}

@@ -1,0 +1,7 @@
+import {createHmac,randomBytes,scryptSync,timingSafeEqual} from 'node:crypto';
+export function safeEqual(a:string,b:string){const x=Buffer.from(a),y=Buffer.from(b);return x.length===y.length&&timingSafeEqual(x,y);}
+export function hashPassword(password:string,salt=randomBytes(16).toString('hex')){return `scrypt:${salt}:${scryptSync(password,salt,64).toString('hex')}`;}
+export function verifyPassword(password:string,encoded:string){const [algorithm,salt,hash]=encoded.split(':');if(algorithm!=='scrypt'||!salt||!hash||password.length>1024)return false;return safeEqual(scryptSync(password,salt,64).toString('hex'),hash);}
+function base32(value:string){const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';let bits='';for(const c of value.toUpperCase().replace(/=+$/,'')){const i=alphabet.indexOf(c);if(i<0)throw new Error('Invalid TOTP secret');bits+=i.toString(2).padStart(5,'0');}return Buffer.from(bits.match(/.{8}/g)?.map(b=>parseInt(b,2))||[]);}
+export function totp(secret:string,step=Math.floor(Date.now()/30000)){const counter=Buffer.alloc(8);counter.writeBigUInt64BE(BigInt(step));const digest=createHmac('sha1',base32(secret)).update(counter).digest(),offset=digest[digest.length-1]&15;return String((digest.readUInt32BE(offset)&0x7fffffff)%1000000).padStart(6,'0');}
+export function verifyTotp(secret:string,code:string,now=Date.now()){if(!/^\d{6}$/.test(code))return null;const step=Math.floor(now/30000);for(const delta of [-1,0,1])if(safeEqual(totp(secret,step+delta),code))return step+delta;return null;}

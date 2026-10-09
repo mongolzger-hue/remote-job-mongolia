@@ -1,0 +1,7 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parseWwr,planWwr} from '../lib/wwr';
+const feed=(description:string,region='Anywhere in the World')=>`<rss><channel><item><title>Example: Engineer</title><region>${region}</region><category>Programming</category><type>Full-Time</type><description><![CDATA[${description}]]></description><link>https://weworkremotely.com/remote-jobs/example-engineer</link><pubDate>Fri, 09 Oct 2026 00:00:00 GMT</pubDate></item></channel></rss>`;
+test('WWR requires independent worldwide evidence and preserves source attribution',()=>{assert.equal(parseWwr(feed('Build products remotely.')).jobs[0].status,'pending');const job=parseWwr(feed('Work from anywhere in the world.')).jobs[0];assert.equal(job.status,'approved');assert.equal(job.importInfo?.source,'We Work Remotely');assert.equal(job.applicationUrl,job.importInfo?.sourceUrl);});
+test('WWR rejects regional jobs and hides contradictory country requirements',()=>{assert.equal(parseWwr(feed('Remote engineer','United States')).jobs.length,0);assert.equal(parseWwr(feed('Work from anywhere. Location: Remote-first (Argentina)')).jobs[0].status,'pending');assert.throws(()=>parseWwr('<rss>'));});
+test('WWR refresh deduplicates and hides newly restricted or missing jobs',()=>{const existing=parseWwr(feed('Work from anywhere in the world.')).jobs;const plan=planWwr(feed('Must reside in Canada.'),existing);assert.equal(plan.summary.duplicates,1);assert.equal(plan.changes[0].status,'pending');});

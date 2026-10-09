@@ -1,0 +1,6 @@
+import {readFile} from 'node:fs/promises';
+import {createClient} from '@supabase/supabase-js';
+try{for(const line of (await readFile('.env.local','utf8')).split(/\r?\n/)){const m=line.match(/^([A-Z_]+)=(.*)$/);if(m&&!process.env[m[1]])process.env[m[1]]=m[2];}}catch{}
+const required=['SITE_URL','SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','ADMIN_USERNAME','ADMIN_PASSWORD_HASH','ADMIN_TOTP_SECRET','SESSION_SECRET','BACKUP_KEY','SUPPORT_EMAIL'];const missing=required.filter(k=>!process.env[k]);if(missing.length){console.error('Not launch-ready. Missing: '+missing.join(', '));process.exit(1);}
+if(!process.env.SITE_URL.startsWith('https://')||process.env.SITE_URL.includes('localhost')||process.env.SESSION_SECRET.length<32||process.env.BACKUP_KEY.length<32){console.error('Not launch-ready: use a public HTTPS origin and strong session/backup secrets.');process.exit(1);}
+const db=createClient(process.env.SUPABASE_URL,process.env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false}});for(const table of ['jobs','admin_sessions','rate_limits','api_cache']){const {error}=await db.from(table).select('*',{head:true,count:'exact'});if(error)throw new Error(`Check ${table}: ${error.message}`);}console.log('Environment and table connectivity checks passed. Still verify HTTPS, RLS grants, TOTP enrollment, backup restore and Search Console ownership on the deployed site.');

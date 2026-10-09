@@ -1,0 +1,10 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {hashPassword,verifyPassword,totp,verifyTotp} from '../lib/crypto';
+import {body,sameOrigin,HttpError} from '../lib/http';
+import {seo} from '../lib/seo';
+test('password hashing is salted and rejects an incorrect password',()=>{const hash=hashPassword('a long test password');assert.notEqual(hash,hashPassword('a long test password'));assert.ok(verifyPassword('a long test password',hash));assert.equal(verifyPassword('wrong',hash),false);});
+test('TOTP matches RFC 6238 SHA1 vector and rejects invalid codes',()=>{const secret='GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';assert.equal(totp(secret,1),'287082');assert.equal(verifyTotp(secret,'287082',59000),1);assert.equal(verifyTotp(secret,'wrong',59000),null);assert.equal(verifyTotp(secret,'287082',180000),null);});
+test('cross-origin mutation is rejected',()=>{const old=process.env.SITE_URL;delete process.env.SITE_URL;try{assert.ok(sameOrigin(new Request('http://localhost:3000/api/jobs',{headers:{origin:'http://localhost:3000'}})));assert.equal(sameOrigin(new Request('http://localhost:3000/api/jobs',{headers:{origin:'https://evil.example'}})),false);}finally{if(old)process.env.SITE_URL=old;}});
+test('body parser enforces JSON, byte limits and object shape',async()=>{const r=(data:string,type='application/json')=>new Request('http://localhost',{method:'POST',headers:{'content-type':type},body:data});assert.deepEqual(await body(r('{"title":"Role"}')),{title:'Role'});await assert.rejects(body(r('[]')),HttpError);await assert.rejects(body(r('{}','text/plain')),HttpError);await assert.rejects(body(r(JSON.stringify({description:'あ'.repeat(8000)}))),e=>e instanceof HttpError&&e.status===413);});
+test('localized metadata uses self canonical and reciprocal language alternates',()=>{const metadata=seo('/jobs/example','mn','Ажил','Тайлбар');assert.match(String(metadata.alternates?.canonical),/\/jobs\/example\?lang=mn$/);assert.ok(metadata.alternates?.languages?.en);assert.ok(metadata.alternates?.languages?.mn);assert.equal(metadata.openGraph?.locale,'mn_MN');});
