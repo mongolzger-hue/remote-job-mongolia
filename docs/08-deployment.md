@@ -4,9 +4,9 @@
 
 ## GitHub
 
-Private repository-оор эхлэхийг зөвлөж байна. `.env.local`, `.data/`, `.backups/` болон admin setup credentials-ийг upload хийхгүй. `.gitignore`/`.vercelignore` нэмэгдсэн. GitHub checks workflow unit tests, types, security store, build ажиллуулна; workflow GitHub дээр хараахан ажиллаагүй.
+Repository: https://github.com/mongolzger-hue/remote-job-mongolia (public). `.env.local`, `.data/`, `.backups/` болон admin setup credentials-ийг upload хийхгүй. `.gitignore`/`.vercelignore` нэмэгдсэн. GitHub checks workflow unit tests, types, security store, build ажиллуулна; анхны workflow амжилттай дууссан.
 
-GitHub account нэвтрэлт, repository URL, Git author name/email одоогоор тохируулаагүй. Account нэвтэрсний дараа repository үүсгэж, source files commit/push хийнэ. GitHub Pages дээр энэ Next.js server app-г static болгон байрлуулахгүй; GitHub нь source repository, Vercel нь runtime.
+GitHub account, remote болон main branch push тохируулагдсан. GitHub нь source repository, Vercel нь runtime.
 
 ## Supabase
 
@@ -33,6 +33,8 @@ Secret values-ийг чат, source code, GitHub body/log-д оруулахгү�
 Production domain тодорхой болмогц SITE_URL тохируулаад redeploy хийнэ. Vercel custom domain шаардахгүйгээр provider URL өгдөг; account/plan-ийн ашиглалтын нөхцөлийг operator шалгана. Import endpoint maxDuration=60 боловч provider limits болон олон page fetch-ийн runtime staging дээр хэмжинэ. Таймаутын үед complete feed болсон гэж зар deactivate хийхгүй.
 
 ## Live шалгалт
+
+2026-10-09: https://remote-job-mongolia-1gys.vercel.app нийтлэгдсэн. Supabase project eoykgnoqndpeuietgxol-д schema + 002–006 migrations амжилттай; дөрвөн хүснэгтийн server connectivity шалгасан. 484 source record шилжүүлсэн; ерөнхий бүртгэл/туршилт/бүсийн хязгаарлалттай 13 зар pending болгосны дараа 275 public зар. Public API key дөрвөн хүснэгт унших эрхгүйг шалгасан. Production-only sensitive environment variables хадгалсан; preview нь production credentials авахгүй. Live SEO smoke 10 bilingual pages амжилттай. Admin username/password/TOTP нэвтрэлт live дээр амжилттай. SUPPORT_EMAIL болон Google ownership verification тохируулагдаагүй; ажил олгогчийн form/moderation live mutation болон importer runtime бүрэн тестлээгүй.
 
 `check:launch` орчин ба DB tables шалгана. HTTPS homepage, хоёр хэл, sitemap/robots, canonical public origin, CSP/nonce hydration, posting pending, admin 2FA, moderation, logout, importer cache/RPC, DB grants/RLS, backup restore шалгана. `SMOKE_BASE_URL`-тай SEO script staging/live HTML шалгаж болно. Mutation smoke нь зөвхөн тусгай disposable staging өгөгдөл дээр.
 
