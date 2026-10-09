@@ -1,0 +1,7 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {activeMembership,memberOnly,paymentReference,safeNext} from '../lib/member-policy';
+test('Membership requires a valid future expiry; exact expiry never unlocks access',()=>{const now=Date.parse('2026-10-09T12:00:00Z');assert.equal(activeMembership('2026-10-10T12:00:00Z',now),true);for(const expiry of [null,undefined,'invalid','2026-10-09T12:00:00Z','2026-10-08T00:00:00Z'])assert.equal(activeMembership(expiry,now),false);});
+test('Only original listings can require membership; imported links remain public',()=>{assert.equal(memberOnly({membersOnly:true}),true);assert.equal(memberOnly({membersOnly:false}),false);assert.equal(memberOnly({}),false);assert.equal(memberOnly({membersOnly:true,importInfo:{source:'Remotive'} as never}),false);});
+test('Authentication redirects reject cross-origin and backslash escape tricks',()=>{for(const next of ['https://evil.test','//evil.test','/\\evil.test','/\n/evil.test',null])assert.equal(safeNext(next),'/account');assert.equal(safeNext('/apply/job-123?lang=mn'),'/apply/job-123?lang=mn');});
+test('Payment references are normalized so repeated transfers cannot grant access twice',()=>{assert.equal(paymentReference(' ab1234 '),'AB1234');assert.equal(paymentReference('ТӨЛБӨР-123'),'ТӨЛБӨР-123');for(const ref of ['',null,123,'abc','<script>','a'.repeat(81)])assert.throws(()=>paymentReference(ref));});

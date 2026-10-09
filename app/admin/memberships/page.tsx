@@ -1,0 +1,8 @@
+import Link from 'next/link';
+import {isAdmin} from '@/lib/auth';
+import {memberDb,membershipPlan} from '@/lib/member';
+import {language} from '@/lib/i18n';
+import AdminMemberships from '@/components/admin-memberships';
+export const dynamic='force-dynamic';
+export const metadata={title:'Membership administration',robots:{index:false,follow:false}};
+export default async function Page({searchParams}:{searchParams:Promise<{lang?:string}>}){const lang=language((await searchParams).lang),mn=lang==='mn';if(!await isAdmin())return <main className="shell account-page"><h1>{mn?'Админ нэвтрэх шаардлагатай':'Administrator sign-in required'}</h1><Link className="button" href={`/admin?lang=${lang}`}>{mn?'Админ нэвтрэх':'Sign in as administrator'}</Link></main>;const db=memberDb(),plan=await membershipPlan(),{data,error}=await db.from('membership_orders').select('id,user_id,amount,duration_days,payment_reference,status,created_at').order('created_at',{ascending:false}).limit(100);if(error)throw new Error('Membership orders unavailable');const userIds=[...new Set((data||[]).map(o=>o.user_id as string))],users=new Map<string,string>();for(const id of userIds){const result=await db.auth.admin.getUserById(id);if(result.error)throw new Error('Member lookup unavailable');users.set(id,result.data.user.email||id);}return <main className="shell account-page"><Link href={`/admin?lang=${lang}`}>‹ {mn?'Зарын админ':'Job administration'}</Link><div className="page-heading"><h1>{mn?'Membership удирдах':'Manage memberships'}</h1></div><AdminMemberships lang={lang} plan={plan} orders={(data||[]).map(o=>({...o,email:users.get(o.user_id)||o.user_id}))}/></main>;}

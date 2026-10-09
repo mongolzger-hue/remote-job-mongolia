@@ -1,7 +1,7 @@
 export const categories = ['Engineering', 'Design', 'Marketing', 'Customer support', 'Operations', 'Writing', 'Sales', 'Other'] as const;
 export const remoteTypes = ['Worldwide', 'Asia-Pacific', 'Mongolia'] as const;
 export type JobImport = { source:'Remotive'|'We Work Remotely'|'Himalayas'|'Jobicy'|'Remote OK'; sourceUrl:string; externalId:string; locationRequirement:string; eligibility:'worldwide'|'mongolia'|'review'; reason:string; importedAt:string; active:boolean; expiresAt?:string; workingHours?:{en:string;mn:string} };
-export type Job = { id:string; title:string; company:string; location:string; salary:string; category:string; remoteType:string; employment:string; description:string; applicationUrl:string; featured:boolean; status:'pending'|'approved'; createdAt:string; importInfo?:JobImport };
+export type Job = { id:string; title:string; company:string; location:string; salary:string; category:string; remoteType:string; employment:string; description:string; applicationUrl:string; featured:boolean; status:'pending'|'approved'; createdAt:string; importInfo?:JobImport; membersOnly?:boolean };
 export const seedJobs: Job[] = [
   ['frontend-engineer','Senior Frontend Engineer','Orbit','Engineering','Worldwide','$70,000 – $100,000 / year','Full-time',true],
   ['product-designer','Product Designer','Forma','Design','Asia-Pacific','$45,000 – $65,000 / year','Full-time',true],
