@@ -6,6 +6,10 @@ import { Job, seedJobs } from './jobs';
 export const configured=Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 const db=()=>createClient(process.env.SUPABASE_URL!,process.env.SUPABASE_SERVICE_ROLE_KEY!,{auth:{persistSession:false}});
 const file=path.join(process.cwd(),'.data','jobs.json');
+export async function getJob(id:string):Promise<Job|undefined>{
+ if(configured){const {data,error}=await db().from('jobs').select('*').eq('id',id).maybeSingle();if(error)throw error;return data??undefined;}
+ return (await getJobs()).find(job=>job.id===id);
+}
 export async function getJobs():Promise<Job[]> {
  if(Boolean(process.env.SUPABASE_URL)!==Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY))throw new Error('Both Supabase variables must be configured');
  if(configured){const {data,error}=await db().from('jobs').select('*').order('createdAt',{ascending:false});if(error)throw error;return data as Job[];}
