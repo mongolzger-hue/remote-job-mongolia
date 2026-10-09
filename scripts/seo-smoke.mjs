@@ -15,9 +15,11 @@ function metadata(html,path,indexed=true){
 }
 const sitemap=await page('/sitemap.xml');assert.ok(sitemap.includes('<urlset'));assert.ok(!sitemap.includes('/admin')&&!sitemap.includes('/api/'));
 let checked=0;
-for(const path of ['/','/post','/privacy','/terms'])for(const lang of ['en','mn']){const url=path+(lang==='mn'?'?lang=mn':'');const html=await page(url);const canonical=metadata(html,url);assert.ok(sitemap.includes(canonical.replace(/&/g,'&amp;')),`${url}: canonical absent from sitemap`);checked++;}
+for(const path of ['/','/post','/privacy','/terms','/membership'])for(const lang of ['en','mn']){const url=path+(lang==='mn'?'?lang=mn':'');const html=await page(url);const canonical=metadata(html,url);assert.ok(sitemap.includes(canonical.replace(/&/g,'&amp;')),`${url}: canonical absent from sitemap`);checked++;}
 const home=await page('/?lang=mn');const detail=home.match(/href="(\/jobs\/[^"?]+)\?lang=mn"/)?.[1];
 if(detail)for(const lang of ['en','mn']){const url=detail+(lang==='mn'?'?lang=mn':'');metadata(await page(url),url);checked++;}
+metadata(await page('/?focus=english-support'),'/focused search',false);
+metadata(await page('/?access=members'),'/membership filter',false);
 metadata(await page('/?q=example'),'/filtered search',false);
 const admin=await page('/admin');assert.ok(/<meta[^>]+name="robots"[^>]+content="[^"]*noindex/i.test(admin),'admin must remain noindex');
 const robots=await page('/robots.txt');assert.ok(/Allow: \//.test(robots));assert.ok(!/^Disallow:\s*\/\s*$/m.test(robots),'public crawl blocked');assert.ok(/Sitemap: https?:\/\/[^\s]+\/sitemap\.xml/.test(robots));

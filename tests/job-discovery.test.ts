@@ -1,0 +1,7 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {roleCategory,discoveryJobs} from '../lib/job-discovery';
+import {seedJobs} from '../lib/jobs';
+test('Role title classifies customer support and assistants before broad source tags',()=>{assert.equal(roleCategory('Technical Support Specialist','Engineering'),'Customer support');assert.equal(roleCategory('Customer Success Manager','Sales'),'Customer support');assert.equal(roleCategory('Virtual Assistant','Other'),'Operations');assert.equal(roleCategory('Software Engineer','Engineering'),'Engineering');});
+test('English focus needs an explicit English mention and entry focus needs evidence',()=>{const j=seedJobs[4];assert.equal(discoveryJobs([{...j,description:'French required'}],'english-support').length,0);assert.equal(discoveryJobs([{...j,description:'Fluent English required'}],'english-support').length,1);assert.equal(discoveryJobs([{...j,title:'Senior Customer Support',description:'Five years required'}],'entry').length,0);assert.equal(discoveryJobs([{...j,title:'Junior Customer Support'}],'entry').length,1);});
+test('Imported jobs remain free even with a stale paid flag',()=>{const j={...seedJobs[4],membersOnly:true,importInfo:{source:'Remotive' as const,sourceUrl:'https://remotive.com',externalId:'1',locationRequirement:'Worldwide',eligibility:'worldwide' as const,reason:'Worldwide',importedAt:new Date().toISOString(),active:true}};assert.equal(discoveryJobs([j],undefined,'members').length,0);assert.equal(discoveryJobs([j],undefined,'free').length,1);});

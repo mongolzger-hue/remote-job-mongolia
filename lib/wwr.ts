@@ -1,3 +1,4 @@
+import {roleCategory} from './job-discovery';
 import type {Job} from './jobs';
 import {assessEligibility,plainText,workingHours} from './remotive';
 function field(item:string,name:string){const value=item.match(new RegExp(`<${name}(?:\\s[^>]*)?>([\\s\\S]*?)</${name}>`,'i'))?.[1]||'';return value.startsWith('<![CDATA[')?value.slice(9,-3):plainText(value);}
@@ -20,7 +21,7 @@ export function parseWwr(xml:string,now=new Date().toISOString()){
   const type=field(item,'type'),employment=/contract/i.test(type)?'Contract':/part.time/i.test(type)?'Part-time':/full.time/i.test(type)?'Full-time':null;
   if(!employment||!position){excluded++;continue;}
   const id='wwr-'+url.pathname.split('/').filter(Boolean).at(-1);
-  jobs.push({id,title:position.slice(0,300),company:company.slice(0,300),location:region,salary:'Not disclosed / Цалин заагаагүй',category,remoteType:decision.eligibility==='mongolia'?'Mongolia':/anywhere|worldwide/i.test(region)?'Worldwide':'Asia-Pacific',employment,description:description.slice(0,12000),applicationUrl:url.href,featured:false,status:decision.eligibility==='review'?'pending':'approved',createdAt:date.toISOString(),importInfo:{source:'We Work Remotely',sourceUrl:url.href,externalId:id,locationRequirement:region,eligibility:decision.eligibility,reason:decision.reason,importedAt:now,active:true,workingHours:workingHours(description)}});
+  jobs.push({id,title:position.slice(0,300),company:company.slice(0,300),location:region,salary:'Not disclosed / Цалин заагаагүй',category:roleCategory(position,category),remoteType:decision.eligibility==='mongolia'?'Mongolia':/anywhere|worldwide/i.test(region)?'Worldwide':'Asia-Pacific',employment,description:description.slice(0,12000),applicationUrl:url.href,featured:false,status:decision.eligibility==='review'?'pending':'approved',createdAt:date.toISOString(),importInfo:{source:'We Work Remotely',sourceUrl:url.href,externalId:id,locationRequirement:region,eligibility:decision.eligibility,reason:decision.reason,importedAt:now,active:true,workingHours:workingHours(description)}});
  }
  return {jobs,fetched:items.length,excluded};
 }
