@@ -25,6 +25,7 @@ export function normalizeAdditional(source:AdditionalSource,raw:Raw,now=new Date
   // The API does not reliably provide employment type; do not invent it.
   type=/\b(full.time|part.time|contract(?:or)?)\b/i.exec(plainText(description))?.[1]||'';
  }
+ if(/\[(?:closed|expired|filled)\]|\bposition (?:closed|filled)\b/i.test(title))return null;
  if(!title||!company||!description||/general application|future opportunities|talent pool|prospective employees|bewerberpool|open application|work with us!?|expression of interest|future roles|spontaneous application|request for proposal|apply to.+teams|test job.*testing purposes/i.test(title))return null;
  const date=timestamp(published);if(!Number.isFinite(date.getTime())||date>now)return null;
  let expiresAt:string|undefined;if(expiry!==undefined&&expiry!==null){const d=timestamp(expiry);if(!Number.isFinite(d.getTime())||d<=now)return null;expiresAt=d.toISOString();}
@@ -34,7 +35,7 @@ export function normalizeAdditional(source:AdditionalSource,raw:Raw,now=new Date
  const employment=/part.time/i.test(type)?'Part-time':/contract|freelance/i.test(type)?'Contract':/full.time/i.test(type)?'Full-time':null;if(!employment)return null;
  let parsed:URL;try{parsed=new URL(url);}catch{return null;}const host={himalayas:'himalayas.app',jobicy:'jobicy.com',remoteok:'remoteok.com'}[source];if(parsed.protocol!=='https:'||parsed.hostname.toLowerCase()!==host)return null;
  const decision=assessEligibility(location,description);if(!decision)return null;
- if(/(?:\((?:Europe|EMEA|LATAM|US|USA|UK|Canada|Philippines)\)|(?: - | – )(?:Europe|EMEA|LATAM|USA|United States|MN)$)/i.test(title)){decision.eligibility='review';decision.reason='The role title names a hiring region that needs Mongolia confirmation.';}
+ if(/(?:\((?:Europe|EMEA|LATAM|US|USA|UK|Canada|Philippines)\)|(?: - | – )(?:Europe|EMEA|LATAM|USA|United States|MN)(?:$|,))/i.test(title)){decision.eligibility='review';decision.reason='The role title names a hiring region that needs Mongolia confirmation.';}
  if(/\bEurope or LATAM\b/i.test(title)){decision.eligibility='review';decision.reason='The title restricts hiring to regions outside Mongolia.';}
  const text=plainText(description);
  if(/(?:in.person|on.site|onsite)|location:\s*remote.first\s*\([^)]*\)|(?:must|required)[^.\n]{0,70}(?:citizen|residen|work authoriz)|(?:remote|hiring|position)[^.\n]{0,30}(?:US.only|United States only)/i.test(text)){decision.eligibility='review';decision.reason='Country, work authorization or in-person requirements need Mongolia confirmation.';}
