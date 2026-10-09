@@ -15,3 +15,5 @@ Order creation retries reuse persistent order and provider idempotency keys. Nev
 Validation: 33 unit tests and production build passed. The supplied live key passed read-only authentication (HTTP 200); no invoice or money was created. A disposable database test also verified mismatched intent rejection and concurrent duplicate settlement granting only one 30-day term. Real Wire checkout tests remain pending: no test key has been supplied. Do not enable live payments until an end-to-end sandbox test and operational prerequisites are complete. No money was transferred.
 
 Official references: https://docs.wire.mn/docs/quickstart , https://docs.wire.mn/docs/guides/webhooks , https://docs.wire.mn/docs/concepts/money-and-time
+
+Operational update (2026-10-09): Wire dashboard and read-only operator API both show QPay active (operator id qpay). With owner approval, live key and webhook signing secret were saved to Vercel Production. WIRE_MODE=live, WIRE_OPERATORS=qpay, WIRE_PAYMENTS_ENABLED=false. No real invoice or payment was created. Public SMTP signup, support/refund setup and customer payment testing remain incomplete.
