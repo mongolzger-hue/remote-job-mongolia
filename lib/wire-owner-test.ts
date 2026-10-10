@@ -1,0 +1,4 @@
+export function ownerPaymentTest(email:string|null|undefined,configuredEmail=process.env.WIRE_OWNER_TEST_EMAIL,until=process.env.WIRE_OWNER_TEST_UNTIL,now=Date.now()) {
+ return !!email&&!!configuredEmail&&email.trim().toLowerCase()===configuredEmail.trim().toLowerCase()&&!!until&&Number.isFinite(Date.parse(until))&&Date.parse(until)>now;
+}
+export const ownerTestTerms={mn:'500₮-ийн бодит төлбөрийн туршилт. Амжилттай төлөгдвөл 30 хоногийн membership эрх нээгдэнэ. Нэг удаагийн төлбөр, автоматаар сунгахгүй. Энэ туршилтын төлбөр буцаалтгүй. Ажилд орох баталгаа биш. Асуудал гарвал mongolzger@gmail.com хаягаар холбогдоно уу.',en:'Live payment test: 500 MNT for 30 days of membership upon verified payment. One-time payment, no automatic renewal. This test payment is non-refundable. Employment is not guaranteed. Contact mongolzger@gmail.com for support.'};
