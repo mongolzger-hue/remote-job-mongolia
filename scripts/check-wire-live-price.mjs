@@ -1,0 +1,9 @@
+// Creates an unpaid price-check invoice; never confirms or transfers money.
+import {readFile,writeFile} from 'node:fs/promises';
+import {randomUUID} from 'node:crypto';
+for(const line of (await readFile('.env.local','utf8')).split(/\r?\n/)){const m=line.match(/^([A-Z_]+)=(.*)$/);if(m&&!process.env[m[1]])process.env[m[1]]=m[2].replace(/^['"]|['"]$/g,'');}
+if(!process.env.WIRE_API_KEY?.startsWith('sk_live_'))throw new Error('Live key unavailable');
+async function request(path,data){const response=await fetch('https://api.wire.mn/v1/'+path,{method:'POST',headers:{Authorization:'Bearer '+process.env.WIRE_API_KEY,'Content-Type':'application/json','Idempotency-Key':'ajilgo-price-check-'+randomUUID()},body:JSON.stringify(data),signal:AbortSignal.timeout(15000)});if(!response.ok)throw new Error('Wire request failed: '+response.status);return response.json();}
+const file='marketing/wire-price-check.json';
+if(process.argv.includes('--cancel')){const info=JSON.parse(await readFile(file,'utf8'));const result=await request('payment_intents/'+encodeURIComponent(info.intent)+'/cancel',{});console.log(JSON.stringify({status:result.status,amount:result.amount}));}
+else{const intent=await request('payment_intents',{amount:10000,currency:'MNT',description:'Ajilgo 10,000 MNT price check — do not pay',allowed_operators:['qpay'],metadata:{purpose:'owner_authorized_unpaid_price_check'}});if(intent.amount!==10000||intent.currency!=='MNT')throw new Error('Wrong provider amount');const checkout=await request('checkout/sessions',{payment_intent:intent.id,success_url:'https://ajilgo.xyz/membership?lang=mn',cancel_url:'https://ajilgo.xyz/membership?lang=mn'});const safe={intent:intent.id,amount:intent.amount,url:checkout.url};await writeFile(file,JSON.stringify(safe));console.log(JSON.stringify(safe));}

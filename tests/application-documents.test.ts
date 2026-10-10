@@ -1,0 +1,4 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {createApplicationDocuments,type ApplicationDetails} from '../lib/application-documents';
+test('Application drafts preserve supplied experience and omit absent sections',()=>{const input:ApplicationDetails={name:'Test Applicant',email:'test@example.com',location:'Ulaanbaatar, Mongolia',role:'Customer Support',company:'Example Co',summary:'Entry-level applicant',skills:'Written English',experience:'Volunteer: answered enquiries',education:'',languages:'English: intermediate',availability:'UTC+8',motivation:'I enjoy helping customers.'};const result=createApplicationDocuments(input);assert.match(result.cv,/Volunteer: answered enquiries/);assert.doesNotMatch(result.cv,/EDUCATION|years|expert|guarantee/);assert.match(result.letter,/Customer Support at Example Co/);assert.match(result.letter,/UTC\+8/);assert.match(result.letter,/I enjoy helping customers/);});
